@@ -1,13 +1,20 @@
 package com.zy.annotationprocessor;
 
 import android.content.Context;
+import android.util.AttributeSet;
 import android.webkit.WebView;
 
+import java.util.jar.Attributes;
+
 public class MyWebview extends WebView {
-  
-  public MyWebview(Context context) {
-    super(context);
+
+  public MyWebview(Context context, AttributeSet attrs) {
+    super(context, attrs);
     init(context);
+  }
+
+  public MyWebview(Context context) {
+    this(context, null);
   }
   
   private void init(Context context) {
@@ -26,7 +33,7 @@ public class MyWebview extends WebView {
     setWebViewClient(new MyWebviewClient());
     setWebChromeClient(new MyWebChromeClient());
 
-    addJavascriptInterface(new MyJsBridge(), "APT");
+    addJavascriptInterface(new MyJsBridge(getContext(), this), "kwai");
 
 
   }

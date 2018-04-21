@@ -12,20 +12,25 @@ public class WavHeader {
   private short bit;
   private int pcmSize;
 
+  byte[] header = new byte[44];
+  int index;
+
   public void write(DataOutputStream stream) throws IOException {
-    writeString(stream, "RIFF");
-    writeInt(stream, pcmSize + 36);
-    writeString(stream, "WAVE");
-    writeString(stream, "fmt ");
-    writeInt(stream, bit);
-    writeShort(stream, (short) 1); // 1 = PCM
-    writeShort(stream, channel);
-    writeInt(stream, sampleRate);
-    writeInt(stream, sampleRate * 2);
-    writeShort(stream, (short) (channel * bit / 8));
-    writeShort(stream, bit);
-    writeString(stream, "data");
-    writeInt(stream, pcmSize);
+    android.util.Log.e("XXXX", "write " + pcmSize + ", " + bit + ", " + channel + ", " + sampleRate);
+    writeString("RIFF");
+    writeInt(pcmSize + 36);
+    writeString("WAVE");
+    writeString("fmt ");
+    writeInt(bit);
+    writeShort((short) 1); // 1 = PCM
+    writeShort(channel);
+    writeInt(sampleRate);
+    writeInt(sampleRate * channel * bit / 8);
+    writeShort((short) (channel * bit / 8));
+    writeShort(bit);
+    writeString("data");
+    writeInt(pcmSize);
+    stream.write(header);
   }
 
   // 8 or 16
@@ -53,21 +58,24 @@ public class WavHeader {
     return this;
   }
 
-  private void writeString(DataOutputStream out, String s) throws IOException {
-    for (int i = 0; i < s.length(); i++) {
-      out.write(s.charAt(i));
+  private void writeString(String s) {
+    for (int i = 0; i < 4; i++) {
+      header[index + i] = (byte) s.charAt(i);
     }
+    index += 4;
   }
 
-  private void writeInt(DataOutputStream out, int value) throws IOException {
-    out.write(value >> 0);
-    out.write(value >> 8);
-    out.write(value >> 16);
-    out.write(value >> 24);
+  private void writeInt(int value) {
+    header[index] = (byte) (value & 0xff);
+    header[index + 1] = (byte) ((value >> 8) & 0xff);
+    header[index + 2] = (byte) ((value >> 16) & 0xff);
+    header[index + 3] = (byte) ((value >> 24) & 0xff);
+    index += 4;
   }
 
-  private void writeShort(DataOutputStream out, short value) throws IOException {
-    out.write(value >> 0);
-    out.write(value >> 8);
+  private void writeShort(short value) {
+    header[index] = (byte) (value & 0xff);
+    header[index + 1] = (byte) ((value >> 8) & 0xff);
+    index += 2;
   }
 }

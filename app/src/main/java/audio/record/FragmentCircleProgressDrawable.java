@@ -7,10 +7,8 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.os.SystemClock;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 public class FragmentCircleProgressDrawable extends Drawable {
 
@@ -37,10 +35,15 @@ public class FragmentCircleProgressDrawable extends Drawable {
     invalidateSelf();
   }
 
+  public void add(int progress) {
+    mFrags.add(new Frag(progress));
+  }
+
   public void pop() {
-    if (mForward != null) {
+    if (mForward != null || mFrags.size() == 0) {
       return;
     }
+    mFrags.remove(mFrags.size() - 1);
     invalidateSelf();
   }
 
@@ -59,13 +62,15 @@ public class FragmentCircleProgressDrawable extends Drawable {
     float radius = Math.min(bounds.width(), bounds.height()) / 2f;
     mRect.set(centerX - radius, centerY - radius,
         centerX + radius, centerY + radius);
-    mGap = (float) (1f / radius * 180f / Math.PI);
+    mGap = (float) (2f / radius * 180f / Math.PI);
     unit = Math.max(mGap / 360f, 1.6f);
   }
 
   @Override
   public void draw(Canvas canvas) {
-    mPaint.setAlpha(255);
+    float inset = mPaint.getStrokeWidth() / 2;
+    mRect.inset(inset, inset);
+
     float startAngle = 0;
     boolean more = false;
     for (Frag f : mFrags) {
@@ -73,14 +78,16 @@ public class FragmentCircleProgressDrawable extends Drawable {
       startAngle += f.progress / 100f * 360;
     }
 
+    if (mForward != null) {
+      mForward.draw(canvas, startAngle);
+      more = true;
+    }
+
     if (more) {
       invalidateSelf();
     }
 
-    if (mForward != null) {
-      mForward.draw(canvas, startAngle);
-    }
-
+    mRect.inset(-inset, -inset);
   }
 
   @Override
@@ -102,7 +109,7 @@ public class FragmentCircleProgressDrawable extends Drawable {
 
     final int progress;
     int fromProgress;
-    float sumUnit = 0;
+    float sumUnit;
 
     long startTime;
     long targetTime;
@@ -196,9 +203,6 @@ public class FragmentCircleProgressDrawable extends Drawable {
       mPaint.setAlpha((int) (alpha * 255));
 
       currentProgress = (int) Math.min(targetProgress, currentProgress + unit);
-      if (currentProgress < targetProgress) {
-        invalidateSelf();
-      }
 
       float sweep = currentProgress / 100f * 360f;
       if (sweep > mGap) {
