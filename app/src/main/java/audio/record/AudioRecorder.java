@@ -43,7 +43,7 @@ public class AudioRecorder {
   public AudioRecorder() {
     mBufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL, FORMAT);
     mRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNEL, FORMAT, mBufferSize);
-    mEncoder = new AACEncoder(SAMPLE_RATE, CHANNEL);
+    mEncoder = new AACEncoder(SAMPLE_RATE, 1);
     int state = mRecord.getState();
     if (state == AudioRecord.STATE_INITIALIZED && mEncoder.getState() == 0) {
       mStatus = Status.INIT;

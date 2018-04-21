@@ -18,7 +18,7 @@ public class AACEncoder {
 
   private int mSampleRate, mChannels;
 
-  private static final String MIME_TYPE = "audio/mp4a-latm";
+  private static final String MIME_TYPE = MediaFormat.MIMETYPE_AUDIO_AAC;
   private static final int AAC_PROFILE = MediaCodecInfo.CodecProfileLevel.AACObjectLC;
   private static final SparseIntArray SAMPLE_RATES = new SparseIntArray();
   private static final int[] BIT_RATES = {64000, 96000, 128000};
@@ -31,6 +31,8 @@ public class AACEncoder {
     try {
       mEncoder = MediaCodec.createEncoderByType(MIME_TYPE);
       MediaFormat format = MediaFormat.createAudioFormat(MIME_TYPE, mSampleRate, 1);
+      format.setString(MediaFormat.KEY_MIME, MIME_TYPE);
+      format.setInteger(MediaFormat.KEY_CHANNEL_COUNT, channels);
       format.setInteger(MediaFormat.KEY_AAC_PROFILE, AAC_PROFILE);
       format.setInteger(MediaFormat.KEY_BIT_RATE, BIT_RATES[2]);
       format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, 8192);

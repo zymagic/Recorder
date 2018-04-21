@@ -53,7 +53,7 @@ public class AudioRecordPanel extends Fragment {
     mAdopt.setOnClickListener(v -> adopt());
 
     mRecorder = new AudioRecorder();
-    mRecorder.setFile(Environment.getExternalStorageDirectory().getAbsolutePath(), "rrr.m4a");
+    mRecorder.setFile(Environment.getExternalStorageDirectory().getAbsolutePath(), "rrr.aac");
     mRecorder.setMaxTime(mMaxTime);
 
     mRecorder.setListener(new AudioRecorder.Listener() {
