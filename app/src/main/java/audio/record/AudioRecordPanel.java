@@ -23,7 +23,7 @@ public class AudioRecordPanel extends Fragment {
   private View mDelete;
   private View mPanel;
 
-  private AudioRecorder mRecorder;
+  private AudioRecordControl mRecorder;
   private FragmentCircleProgressDrawable mProgress;
 
   private long mMaxTime = DateUtils.MINUTE_IN_MILLIS * 1;
@@ -31,7 +31,7 @@ public class AudioRecordPanel extends Fragment {
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     android.util.Log.e("XXXXX", "onCreateView start");
-    View root = inflater.inflate(R.layout.audio_record, container, false);
+    View root = inflater.inflate(R.layout.fragment_audio_record, container, false);
     mPlayBtn = root.findViewById(R.id.control);
     mAdopt = root.findViewById(R.id.finish);
     mDrop = root.findViewById(R.id.drop);
@@ -43,7 +43,7 @@ public class AudioRecordPanel extends Fragment {
     mProgress.setColor(0xffff8000);
     mPlayBtn.setBackground(mProgress);
 
-    root.setOnClickListener(v -> dismiss());
+    root.setOnClickListener(v -> abort());
     mPanel.setOnClickListener(v -> {});
 
     mPlayBtn.setEnabled(false);
@@ -52,13 +52,13 @@ public class AudioRecordPanel extends Fragment {
     mDelete.setOnClickListener(v -> delete());
     mAdopt.setOnClickListener(v -> adopt());
 
-    mRecorder = new AudioRecorder();
-    mRecorder.setFile(Environment.getExternalStorageDirectory().getAbsolutePath(), "rrr.aac");
+    mRecorder = new AudioRecordControl();
+    mRecorder.setOutput(Environment.getExternalStorageDirectory().getAbsolutePath(), "rrr.aac");
     mRecorder.setMaxTime(mMaxTime);
 
-    mRecorder.setListener(new AudioRecorder.Listener() {
+    mRecorder.setListener(new AudioRecordControl.Listener() {
       @Override
-      public void onStatusChange(AudioRecorder.Status status) {
+      public void onStatusChanged(AudioRecordControl.Status status) {
         switch (status) {
           case INIT:
             mPlayBtn.setEnabled(true);
@@ -79,7 +79,7 @@ public class AudioRecordPanel extends Fragment {
       }
 
       @Override
-      public void onPieceRecord(long length) {
+      public void onProgressUpdate(int index, long length) {
         mProgress.forward().next((int) (length * 100f / mMaxTime));
       }
 
@@ -152,7 +152,7 @@ public class AudioRecordPanel extends Fragment {
   }
 
   private void delete() {
-    mRecorder.deleteLatest();
+    mRecorder.backspace();
   }
 
   private void adopt() {
