@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
+import android.widget.ImageView;
 import android.widget.PopupWindow;
 
 import com.zy.annotationprocessor.R;
@@ -17,7 +18,8 @@ import java.io.File;
 
 public class AudioRecordPanel extends Fragment {
 
-  private View mPlayBtn;
+  private View mControl;
+  private View mPlay;
   private View mAdopt;
   private View mDrop;
   private View mDelete;
@@ -25,32 +27,40 @@ public class AudioRecordPanel extends Fragment {
 
   private AudioRecordControl mRecorder;
   private FragmentCircleProgressDrawable mProgress;
+  private RecordButtonDrawable mControlButton;
 
   private long mMaxTime = DateUtils.MINUTE_IN_MILLIS * 1;
+
+  private boolean isPure = true;
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     android.util.Log.e("XXXXX", "onCreateView start");
     View root = inflater.inflate(R.layout.fragment_audio_record, container, false);
-    mPlayBtn = root.findViewById(R.id.control);
+    mControl = root.findViewById(R.id.control);
     mAdopt = root.findViewById(R.id.finish);
     mDrop = root.findViewById(R.id.drop);
     mDelete = root.findViewById(R.id.delete);
     mPanel = root.findViewById(R.id.panel);
+    mPlay = root.findViewById(R.id.play_back);
 
     mProgress = new FragmentCircleProgressDrawable();
-    mProgress.setStrokeWidth(6);
-    mProgress.setColor(0xffff8000);
-    mPlayBtn.setBackground(mProgress);
+    mProgress.setStrokeWidth((int) (3 * getActivity().getResources().getDisplayMetrics().density));
+    mProgress.setColor(0xffff8000, 0xfff3f3f3);
+    mControl.setBackground(mProgress);
 
     root.setOnClickListener(v -> abort());
     mPanel.setOnClickListener(v -> {});
 
-    mPlayBtn.setEnabled(false);
-    mPlayBtn.setOnClickListener(v -> control());
+    mControlButton = new RecordButtonDrawable(getActivity().getResources().getDrawable(R.drawable.karaoke_btn_record_normal), 0xffff8000);
+    mControlButton.setPureStatus(() -> isPure);
+    ((ImageView) mControl).setImageDrawable(mControlButton);
+    mControl.setEnabled(false);
+    mControl.setOnClickListener(v -> control());
     mDrop.setOnClickListener(v -> abort());
     mDelete.setOnClickListener(v -> delete());
     mAdopt.setOnClickListener(v -> adopt());
+    mPlay.setOnClickListener(v -> play());
 
     mRecorder = new AudioRecordControl();
     mRecorder.setOutput(Environment.getExternalStorageDirectory().getAbsolutePath(), "rrr.aac");
@@ -61,19 +71,23 @@ public class AudioRecordPanel extends Fragment {
       public void onStatusChanged(AudioRecordControl.Status status) {
         switch (status) {
           case INIT:
-            mPlayBtn.setEnabled(true);
+            mControl.setEnabled(true);
             android.util.Log.e("XXXXX", "on init");
             break;
           case START:
-            mPlayBtn.setSelected(true);
+            mControl.setSelected(true);
+
+            mDelete.setVisibility(View.INVISIBLE);
+            mPlay.setVisibility(View.INVISIBLE);
+            mAdopt.setVisibility(View.INVISIBLE);
             android.util.Log.e("XXXXX", "on Start");
             break;
           case PAUSE:
-            mPlayBtn.setSelected(false);
+            mControl.setSelected(false);
             android.util.Log.e("XXXXX", "on pause");
             break;
           case STOP:
-            mPlayBtn.setEnabled(false);
+            mControl.setEnabled(false);
             break;
         }
       }
@@ -88,6 +102,7 @@ public class AudioRecordPanel extends Fragment {
         mProgress.forward().finish(true);
         mAdopt.setVisibility(count > 0 ? View.VISIBLE : View.INVISIBLE);
         mDelete.setVisibility(count > 0 ? View.VISIBLE : View.INVISIBLE);
+        mPlay.setVisibility(count > 0 ? View.VISIBLE : View.INVISIBLE);
       }
 
       @Override
@@ -95,6 +110,11 @@ public class AudioRecordPanel extends Fragment {
         mProgress.pop();
         mAdopt.setVisibility(remain > 0 ? View.VISIBLE : View.INVISIBLE);
         mDelete.setVisibility(remain > 0 ? View.VISIBLE : View.INVISIBLE);
+        mPlay.setVisibility(remain > 0 ? View.VISIBLE : View.INVISIBLE);
+        if (remain == 0) {
+          isPure = true;
+          mControlButton.reset();
+        }
       }
 
       @Override
@@ -135,15 +155,20 @@ public class AudioRecordPanel extends Fragment {
   }
 
   private void control() {
-    if (mPlayBtn.isSelected()) {
-      mPlayBtn.setSelected(false);
+    if (mControl.isSelected()) {
+      mControl.setSelected(false);
       mRecorder.pause();
       android.util.Log.e("XXXXX", "click pause button");
     } else {
-      mPlayBtn.setSelected(true);
+      mControl.setSelected(true);
       mRecorder.start();
+      isPure = false;
       android.util.Log.e("XXXXX", "click start button");
     }
+  }
+
+  private void play() {
+
   }
 
   private void abort() {

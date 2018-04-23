@@ -18,6 +18,8 @@ public class FragmentCircleProgressDrawable extends Drawable {
   float unit = Math.max(mGap / 360f, 1.6f);
   private RectF mRect = new RectF();
 
+  private int mMainColor, mDeleteColor, mBaseColor;
+
   private Forward mForward;
 
   FragmentCircleProgressDrawable() {
@@ -30,8 +32,10 @@ public class FragmentCircleProgressDrawable extends Drawable {
     invalidateSelf();
   }
 
-  public void setColor(int color) {
+  public void setColor(int color, int base) {
     mPaint.setColor(color);
+    mMainColor = color;
+    mBaseColor = base;
     invalidateSelf();
   }
 
@@ -70,6 +74,11 @@ public class FragmentCircleProgressDrawable extends Drawable {
   public void draw(Canvas canvas) {
     float inset = mPaint.getStrokeWidth() / 2;
     mRect.inset(inset, inset);
+
+    mPaint.setColor(mBaseColor);
+    canvas.drawOval(mRect, mPaint);
+
+    mPaint.setColor(mMainColor);
 
     float startAngle = 0;
     boolean more = false;
@@ -161,7 +170,7 @@ public class FragmentCircleProgressDrawable extends Drawable {
           sweep -= mGap;
           startAngle += mGap;
         }
-        canvas.drawArc(mRect, startAngle, sweep, false, mPaint);
+        canvas.drawArc(mRect, startAngle - 90, sweep, false, mPaint);
       }
       return more;
     }
@@ -206,7 +215,7 @@ public class FragmentCircleProgressDrawable extends Drawable {
 
       float sweep = currentProgress / 100f * 360f;
       if (sweep > mGap) {
-        canvas.drawArc(mRect, startAngle, sweep - mGap, false, mPaint);
+        canvas.drawArc(mRect, startAngle - 90, sweep - mGap, false, mPaint);
       }
     }
   }
